@@ -16,34 +16,37 @@ const databaseId = config.database.id;
 const containerId = config.container.id;
 const partitionKey = { kind: "Hash", paths: ["/Category"] };
 
-/**
-* Read the database definition
-*/
+// READ THE DATABASE DEFINITION - THIS IS NOT NEEDED TO PERFORM INSERTS.
 async function readDatabase() {
   const { resource: databaseDefinition } = await client.database(databaseId).read();
   console.log(`Reading database:\n${databaseDefinition.id}\n`);
 }
 
+
+//  QUERY THE DATABASE.
 async function queryContainer() {
   console.log(`Querying container:\n${config.container.id}`);
-
-  // query to return all children in a family
   const querySpec = {
-     query: "SELECT * FROM root r WHERE r.category = @category",
-     parameters: [
-       {
-         name: "@category",
-         value: "work"
-       }
-     ]
-  
- };
+    query: "SELECT * FROM root r WHERE r.category = @category",
+    parameters: [
+      {
+        name: "@category",
+        value: "work"
+      }
+    ]
+  };
 
- const { resources } = await client.database(databaseId).container(containerId).items.query(querySpec, {enableCrossPartitionQuery:true}).fetchAll();
- for (var queryResult of resources) {
-     let resultString = JSON.stringify(queryResult);
-     console.log(`\tQuery returned ${resultString}\n`);
- }
+  const { resources } = await client.database(databaseId).container(containerId).items.query(querySpec, { enableCrossPartitionQuery: true }).fetchAll();
+  for (var queryResult of resources) {
+    let resultString = JSON.stringify(queryResult);
+    console.log(`\tQuery returned ${resultString}\n`);
+  }
+};
+
+// CREATE A NEW RECORD IN THE DATABASE.
+async function createTodoItem(itemBody) {
+  const { item } = await client.database(databaseId).container(containerId).items.upsert(itemBody);
+  console.log(`Created todo item with id:\n${itemBody.id}\n`);
 };
 
 // ADD THIS PART TO YOUR CODE
@@ -55,7 +58,10 @@ function exit(message) {
   process.stdin.on('data', process.exit.bind(process, 0));
 };
 
+queryContainer()
+.then(() => createTodoItem(config.items.expense))
+.then(() => exit("Done reading the container."))
 
-readDatabase()
-.then(() => queryContainer())
-.then(() => exit("We are done."))
+// readDatabase()
+// .then(() => queryContainer())
+// .then(() => exit("We are done."))

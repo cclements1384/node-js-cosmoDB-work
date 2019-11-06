@@ -11,4 +11,14 @@ config.container = {
   id: 'Items'
 }
 
+config.items = {
+  expense: {
+    "id": "3",
+    "category": "work",
+    "name": "Expense Report",
+    "description": "Submit expense report to SAP.",
+    "isComplete": false,
+  }
+}
+
 module.exports = config
